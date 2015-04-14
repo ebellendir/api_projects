@@ -7,29 +7,31 @@ require 'json'
 require 'openssl'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
-puts "Let's get the weather forecast for your location."
+puts "Let's get the weather forecast for your address."
 
-puts "What is the latitude?"
-the_latitude = gets.chomp
+puts "What is the address you would like to know the weather for?"
+street_address = gets.chomp
+url_safe_street_address = URI.encode(street_address)
 
-puts "What is the longitude?"
-the_longitude = gets.chomp
-
-# Your code goes below. Use the same approach as you did in
-#   address_to_coords.rb to read from a remote API and parse
-#   the results.
-
-url_of_data_we_want = "https://api.forecast.io/forecast/2fe02e8e6bfe071290046eeec157db50/"+ the_latitude + "," + the_longitude
+# Code to get the latitude and longitude using google maps API
+url_of_data_we_want = "http://maps.googleapis.com/maps/api/geocode/json?address="+ url_safe_street_address
 raw_data = open(url_of_data_we_want).read
 parsed_data = JSON.parse(raw_data)
-# puts parsed_data.to_s
-# ...
-the_temperature = parsed_data["currently"]["temperature"]
-the_hour_outlook = parsed_data["hourly"]["summary"]
-the_day_outlook = parsed_data["daily"]["summary"]
+
+the_latitude = parsed_data["results"][0]["geometry"]["location"]["lat"]
+the_longitude = parsed_data["results"][0]["geometry"]["location"]["lng"]
+
+#Code to get the weather using dark sky
+url_of_data_we_want2 = "https://api.forecast.io/forecast/2fe02e8e6bfe071290046eeec157db50/"+ the_latitude.to_s + "," + the_longitude.to_s
+raw_data2 = open(url_of_data_we_want2).read
+parsed_data2 = JSON.parse(raw_data2)
+
+the_temperature = parsed_data2["currently"]["temperature"]
+the_hour_outlook = parsed_data2["hourly"]["summary"]
+the_day_outlook = parsed_data2["daily"]["summary"]
 
 # Ultimately, we want the following line to work when uncommented:
 
-puts "The current temperature at #{the_latitude}, #{the_longitude} is #{the_temperature} degrees."
+puts "The current temperature at #{street_address} is #{the_temperature} degrees."
 puts "The outlook for the next hour is: #{the_hour_outlook}"
 puts "The outlook for the next day is: #{the_day_outlook}"
